@@ -1,0 +1,11 @@
+{
+  "name": "GuildBot",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "author": "Lanidae",
+  "dependencies": {
+    "discord.io": "https://github.com/woor/discord.io/tarball/gateway_v6",
+    "winston": "^3.3.3"
+  }
+}
