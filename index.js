@@ -24,7 +24,7 @@ bot.on('ready', function(evt) {
   bot.setPresence({
     game:{
       type: 0,
-      name: 'Botting Around The Christmas Tree (v1.0.0)'
+      name: 'Botting Around The Christmas Tree (v1.0.1)'
     }
   })
 });
@@ -256,59 +256,26 @@ bot.on('message', function(user, userID, channelID, message, evt){
                 break;
             case 'roll':
                 logger.info(Date() + ' - ' + user + '(' + userID + ')' + ' did command: roll');
-                if (args[0]) {
-                    var rolling = args[0].split('+');
-                    var value;
-                    if (rolling[0].substring(0, 1) != 'd') {
-                        var count = parseInt(rolling[0].substring(0, 1));
-                        rolling[0] = rolling[0].substring(1, rolling[0].length);
-                        var output = '';
-                        if (rolling[1]) {
-                            for (var i = 0; i < count; i++) {
-                                if (i == 0) {
-                                    output += (Math.floor(Math.random() * parseInt(rolling[0].substring(1, rolling[0].length))) + 1 + parseInt(rolling[1]));
-                                }
-                                else {
-                                    output += ' | ' + (Math.floor(Math.random() * parseInt(rolling[0].substring(1, rolling[0].length))) + 1 + parseInt(rolling[1]));
-                                }
-                            }
-                            bot.sendMessage({
-                                to: channelID,
-                                message: 'Results: `' + count + 'd' + rolling[0].substring(1, rolling[0].length) + '+' + rolling[1] +' - ' + output + '`'
-                            });
-                        } else {
-                            for (var i = 0; i < count; i++) {
-                                if (i = 0) {
-                                    output += (Math.floor(Math.random() * parseInt(rolling[0].substring(1, rolling[0].length))) + 1);
-                                } else {
-                                    output += ' | ' + (Math.floor(Math.random() * parseInt(rolling[0].substring(1, rolling[0].length))) + 1);
-                                }
-                            }
-                            bot.sendMessage({
-                                to: channelID,
-                                message: 'Results: `' + count + 'd' + rolling[0].substring(1, rolling[0].length) + ' - ' + output + '`'
-                            });
-                        }
-                        
-                        break;
-                    } else {
-                        if (rolling[1]) {
-                            value = (Math.floor(Math.random() * parseInt(rolling[0].substring(1, rolling[0].length))) + 1 + parseInt(rolling[1]));
-                            bot.sendMessage({
-                                to: channelID,
-                                message: 'Result: `' + rolling[0] + ' + ' + rolling[1] + '` ' + value
-                            });
-                            break;
-                        }
-                        else {
-                            value = (Math.floor(Math.random() * parseInt(rolling[0].substring(1, rolling[0].length))) + 1);
-                            bot.sendMessage({
-                                to: channelID,
-                                message: 'Result: `' + rolling[0] + ' + 0` ' + value
-                            });
-                            break;
-                        }
-                    }
+                if (args[0]) {  
+                  var temp = args[0].split('d');
+                  var count = parseInt(temp[0]);
+                  var temp = temp[1].split('+');
+                  var dice = parseInt(temp[0]);
+                  var adder = parseInt(temp[1]);
+                  var output = '';
+                  for(var i = 0; i < count; i++){
+	                  if (i == 0){
+	                    output += (Math.floor(Math.random() * dice) + 1 + adder);
+	                  } else {
+		                  output += ' | ' + (Math.floor(Math.random() * dice) + 1 + adder);
+	                  }
+                  }
+
+                  bot.sendMessage({
+                  	to: channelID,
+	                  message: 'Results: `' + count + 'd' + dice + '+'+ adder + ' - ' + output + '`'
+                  });
+                  break;
                 }
                 else {
                     if (selecteds[userID]) {
