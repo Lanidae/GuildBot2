@@ -4,7 +4,9 @@ var Discord = require('discord.io');
 var logger = require('winston');
 var rollers = [];
 var selecteds = [];
+const keepAlive = require('./server');
 
+keepAlive();
 let fs = require('fs');
 
 logger.remove(logger.transports.Console);
@@ -19,6 +21,12 @@ var bot = new Discord.Client({
 bot.on('ready', function(evt) {
   logger.info('Connected');
   logger.info('Logged in as: ' + bot.username + ' - (' + bot.id + ')');
+  bot.setPresence({
+    game:{
+      type: 0,
+      name: 'Botting Around The Christmas Tree (v1.0.0)'
+    }
+  })
 });
 
 fs.readFile('guild.json', 'utf8', function(err,data){
