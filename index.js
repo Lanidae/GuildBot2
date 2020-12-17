@@ -54,7 +54,7 @@ function rollDice(adder = 0, dice) {
 }
 
 bot.on('message', function(user, userID, channelID, message, evt){
-  if ((message.substring(0,2) == '!g') || (message.substring(0,2) == '!G')){
+  if ((message.substring(0,2).toLowerCase() == config.prefix)){
     var args = message.substring(2).split(' ');
     var cmd = args[0].toLowerCase();
     args = args.splice(1);
@@ -107,12 +107,6 @@ bot.on('message', function(user, userID, channelID, message, evt){
                     }
                 }
                 break;
-            case 'Add':
-            case 'ADd':
-            case 'ADD':
-            case 'AdD':
-            case 'aDD':
-            case 'adD':
             case 'add':
                 logger.info(Date() + ' - ' + user + '(' + userID + ')' + ' did command: add');
                 newRoller = new roller(args[0], userID, args[1], args[2]);
@@ -260,15 +254,6 @@ bot.on('message', function(user, userID, channelID, message, evt){
                     }
                 }
                 break;
-            case 'Roll':
-            case 'ROll':
-            case 'ROLl':
-            case 'ROLL':
-            case 'RoLL':
-            case 'RolL':
-            case 'rolL':
-            case 'roLL':
-            case 'rOLL':
             case 'roll':
                 logger.info(Date() + ' - ' + user + '(' + userID + ')' + ' did command: roll');
                 if (args[0]) {
