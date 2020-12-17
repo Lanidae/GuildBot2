@@ -74,7 +74,7 @@ bot.on('message', function(user, userID, channelID, message, evt){
                 logger.info(Date() + ' - ' + user + '(' + userID + ')' + ' did command: help');
                 bot.sendMessage({
                     to: channelID,
-                    message: 'Read the wiki if you have any questions! https://github.com/Lanidae/GuildBot/wiki'
+                    message: 'Read the wiki if you have any questions! https://github.com/Lanidae/GuildBot2/wiki'
                         
                 });
                 break;
