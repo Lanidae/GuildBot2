@@ -24,7 +24,7 @@ bot.on('ready', function(evt) {
   bot.setPresence({
     game:{
       type: 0,
-      name: 'Botting Around The Christmas Tree (v1.0.1)'
+      name: 'Botting Around The Christmas Tree (v1.0.2)'
     }
   })
 });
@@ -69,14 +69,27 @@ bot.on('message', function(user, userID, channelID, message, evt){
                 break;
             case 'select':
                 for (var i = 0; i < rollers.length; i++) {
-                    if (rollers[i].name == args[0]) {
+                    if (rollers[i].name == args[0] && rollers[i].id == userID) {
                         selecteds[userID] = rollers[i];
+                        bot.sendMessage({
+                         to: channelID,
+                         message: 'You selected - `' + args[0] + '` - I\'ll use them until you tell me to do someone else :).'
+                        });
+                        break;
+                    } else if (rollers[i].name == args[0] && rollers[i].id != userID) {
+                        bot.sendMessage({
+                          to: channelID,
+                          message: 'Sorry, you can only edit your own characters!'
+                        });
+                        break;
+                    } else if (i == (rollers.length - 1)){
+                        bot.sendMessage({
+                          to: channelID,
+                          message: 'I don\'t see a character by that name. You\'ll have to add yourself in with !gadd'
+                        });
+                        break;
                     }
                 }
-                bot.sendMessage({
-                    to: channelID,
-                    message: 'You selected - `' + args[0] + '` - I\'ll use them until you tell me to do someone else :).'
-                });
                 break;
             case 'help':
                 logger.info(Date() + ' - ' + user + '(' + userID + ')' + ' did command: help');
@@ -113,7 +126,7 @@ bot.on('message', function(user, userID, channelID, message, evt){
                 rollers.push(newRoller);
                 bot.sendMessage({
                     to: channelID,
-                    message: 'Added! You are: ' + newRoller.name + '. Your dice is: d' + newRoller.dice +'. Your health is: ' + newRoller.health + '.'
+                    message: 'Added! You are: ' + newRoller.name + '. Your dice is: d' + newRoller.dice + '+' + newRoller.adder +'. Your health is: ' + newRoller.health + '.'
                 });
                 const json = JSON.stringify(rollers);
                         fs.writeFile('guild.json', json, 'utf8', function (err) {
@@ -414,36 +427,6 @@ bot.on('message', function(user, userID, channelID, message, evt){
                             }
                         }
                     }
-                }
-                break;
-            case 'shutdown':
-                logger.info(Date() + ' - ' + user + '(' + userID + ')' + ' did command: shutdown');
-                if (user = 'Lanidae') {
-                    bot.sendMessage({
-                        to: channelID,
-                        message: 'Shutting down!'
-                    });
-                    var t = Math.floor(Math.random() * 1000) + 750;
-                    setTimeout(() => {
-                        bot.sendMessage({
-                            to: channelID,
-                            message: 'Powered down, goodbye!'
-                        });
-                    }, t);
-                    const json = JSON.stringify(rollers);
-                    fs.writeFile('guild.json', json, 'utf8', function (err) {
-                        if (err) {
-                            console.log(err);
-                        } else { }
-                    });
-                    setTimeout(() => { process.exit(1); }, 2000);
-                    break;
-                }
-                else {
-                    bot.sendMessage({
-                        to: channelID,
-                        message: 'Sorry, only the creator (Theo) can shut me down!'
-                    });
                 }
                 break;
         }
