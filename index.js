@@ -179,7 +179,26 @@ bot.on('message', function(user, userID, channelID, message, evt){
             console.log(err);
           } else {}
         });
-        break;
+      break;
+      case 'report':
+        output = '';
+        for(var i = 0; i < tokens.length; i++){
+          if(output == ''){
+            output += '```' + titleString(tokens[i].name) + ': ' + tokens[i].dice + '+' + tokens[i].adder + ' | ' + tokens[i].health;
+          }else{
+            output += '\n' + titleString(tokens[i].name) + ': ' + tokens[i].dice + '+' + tokens[i].adder + ' | ' + tokens[i].health;
+          }
+        }
+        if(output == ''){
+          output = 'There are no tokens in the system';
+        } else {
+          output += '```';
+        } 
+        bot.sendMessage({
+          to: channelID,
+          message: output
+        });
+      break;
         
     }
       
