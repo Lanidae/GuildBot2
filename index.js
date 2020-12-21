@@ -4,6 +4,7 @@ var Discord = require('discord.io');
 var logger = require('winston');
 var rollers = [];
 var selecteds = [];
+var tokens = [];
 const keepAlive = require('./server');
 
 keepAlive();
@@ -24,7 +25,7 @@ bot.on('ready', function(evt) {
   bot.setPresence({
     game:{
       type: 0,
-      name: 'Botting Around The Christmas Tree (v1.0.2)'
+      name: 'Botting Around The Christmas Tree (v1.1.0)'
     }
   })
 });
@@ -37,6 +38,14 @@ fs.readFile('guild.json', 'utf8', function(err,data){
   }
 });
 
+fs.readFile('tokens.json', 'utf8', function(err,data){
+  if(err){
+    console.log(err);
+  } else {
+    tokens = JSON.parse(data);
+  }
+})
+
 class roller {
   constructor(name, id, dice, health) {
     var args = dice.substring(1, dice.length).split('+');
@@ -48,6 +57,134 @@ class roller {
     this.maxhealth = health;
   }
 }
+
+class token {
+  constructor(name, dice, health){
+    var args = dice.substring(1, dice.length).split('+');
+    this.name = name;
+    this.health = parseInt(health);
+    this.dice = parseInt(args[0]);
+    this.adder = parseInt(args[1]);
+  }
+}
+
+function titleString(a){
+  var out = a.charAt(0).toUpperCase() + a.slice(1);
+  return out;
+}
+
+bot.on('message', function(user, userID, channelID, message, evt){
+  if ((message.substring(0,6).toLowerCase() == '!token')){
+    var args = message.substring(7).split(' ');
+    var cmd = args[0];
+    args = args.splice(1);
+    switch (cmd){
+      case 'add':
+        logger.info(Date() + ' - ' + user + '(' + userID + ')' + ' did command: add token');
+        newToken = new token(args[0].toLowerCase(), args[1], args[2]);
+        tokens.push(newToken);
+        bot.sendMessage({
+          to: channelID,
+          message: 'Added! Your token is a: ' + newToken.name + ' with a ' + args[1]+ ' and ' + newToken.health + ' health.'
+        });
+        const jsontoken = JSON.stringify(tokens);
+        fs.writeFile('tokens.json', jsontoken, 'utf8', function (err) {
+          if (err) {
+            console.log(err);
+          } else {}
+        });
+      break;
+      case 'roll':
+      logger.info(Date() + ' - ' + user + '(' + userID + ')' + ' did command: roll token');
+        var total = parseInt(args[0]);
+        var name = args[1].toLowerCase();
+        var count = 0;
+        var output = '';
+        whole:
+        for(var i = 0; i<tokens.length; i++){
+          if(tokens[i].name == name){
+            if(count <= total){
+              if(count == 0){
+                output += '```' + titleString(tokens[i].name) + '('+ (count+1) + ') - ' + Math.floor(Math.random() * parseInt(tokens[i].dice) + 1 + parseInt(tokens[i].adder));
+              } else {
+                output += '\n' + titleString(tokens[i].name) + '(' + (count+1) + ') - ' + Math.floor(Math.random() * parseInt(tokens[i].dice) + 1 + parseInt(tokens[i].adder));
+              }
+              count++;
+              if (count == total) {
+                break whole;
+              }
+            } else {
+              
+            }
+          }
+        }
+
+        output += '```';
+        bot.sendMessage({
+          to: channelID,
+          message: output
+        });
+      break;
+      case 'd':
+      case 'damage':
+        logger.info(Date() + ' - ' + user + '(' + userID + ') did command: damage token');
+        var total = parseInt(args[0]);
+        var name = args[1].toLowerCase();
+        var damage = parseInt(args[2]);
+        var count = 0;
+        var output = '';
+        whole2:
+        for(var i = 0; i<tokens.length; i++){
+          whole3:
+          if(tokens[i].name == name){
+            if(count < total){
+              if(count == 0){
+                tokens[i].health -= damage;
+                output += '```' + titleString(tokens[i].name) + '(' + (count+1) + ') took ' + damage + ' damage. It has: ' + tokens[i].health +' left.' ;
+                if(tokens[i].health < 1){
+                  temp = tokens.splice(i+1, tokens.length);
+                  tokens = tokens.splice(0, i);
+                  tokens = tokens.concat(temp);
+                  i--;
+                  count++;
+                  break whole3;
+                }
+              } else {
+                tokens[i].health -= damage;
+                output += '\n' + titleString(tokens[i].name) + '(' + (count+1) + ') took ' + damage + ' damage. It has: ' + tokens[i].health +' left.' ;
+                if(tokens[i].health < 1){
+                  temp = tokens.splice(i+1, tokens.length);
+                  tokens = tokens.splice(0, i);
+                  tokens = tokens.concat(temp);
+                  i--;
+                  count++;
+                  break whole3;
+                }
+              }
+            }  
+            if(count == total){
+              break whole2;
+            }
+          }
+            
+        }
+        output += '```';
+        bot.sendMessage({
+        to: channelID,
+        message: output
+        });
+        const jsontoken2 = JSON.stringify(tokens);
+        fs.writeFile('tokens.json', jsontoken2, 'utf8', function (err) {
+          if (err) {
+            console.log(err);
+          } else {}
+        });
+        break;
+        
+    }
+      
+  }
+});
 
 function rollDice(adder = 0, dice) {
   return (Math.floor(Math.random() * dice) + 1 + parseInt(adder));
@@ -429,6 +566,15 @@ bot.on('message', function(user, userID, channelID, message, evt){
                     }
                 }
                 break;
+                case 'shutdown':
+                for(var i = 0; i<rollers.length; i++){
+                  if(user == 'Lanidae'){
+                      process.exit();
+                  }
+
+                }
+                break;
+                
         }
   }
 });
