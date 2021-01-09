@@ -25,7 +25,7 @@ bot.on('ready', function(evt) {
   bot.setPresence({
     game:{
       type: 0,
-      name: 'Botting Around The Christmas Tree (v1.1.0)'
+      name: 'And a Bot-y New Year (!ghelp)'
     }
   })
 });
@@ -52,7 +52,7 @@ class roller {
     this.name = name;
     this.id = id;
     this.dice = parseInt(args[0]);
-    this.adder = parseInt(args[1]);
+    this.adder = parseInt(args[1]) || 0;
     this.health = health;
     this.maxhealth = health;
   }
@@ -64,7 +64,7 @@ class token {
     this.name = name;
     this.health = parseInt(health);
     this.dice = parseInt(args[0]);
-    this.adder = parseInt(args[1]);
+    this.adder = parseInt(args[1]) || 0;
   }
 }
 
@@ -72,7 +72,7 @@ function titleString(a){
   var out = a.charAt(0).toUpperCase() + a.slice(1);
   return out;
 }
-
+//Tokens
 bot.on('message', function(user, userID, channelID, message, evt){
   if ((message.substring(0,6).toLowerCase() == '!token')){
     var args = message.substring(7).split(' ');
@@ -208,7 +208,7 @@ bot.on('message', function(user, userID, channelID, message, evt){
 function rollDice(adder = 0, dice) {
   return (Math.floor(Math.random() * dice) + 1 + parseInt(adder));
 }
-
+//Conspicuously Not Tokens
 bot.on('message', function(user, userID, channelID, message, evt){
   if ((message.substring(0,2).toLowerCase() == config.prefix)){
     var args = message.substring(2).split(' ');
@@ -235,7 +235,7 @@ bot.on('message', function(user, userID, channelID, message, evt){
                     } else if (rollers[i].name == args[0] && rollers[i].id != userID) {
                         bot.sendMessage({
                           to: channelID,
-                          message: 'Sorry, you can only edit your own characters!'
+                          message: 'Sorry, you can only select your own characters!'
                         });
                         break;
                     } else if (i == (rollers.length - 1)){
@@ -320,9 +320,9 @@ bot.on('message', function(user, userID, channelID, message, evt){
                             if (rollers[parseInt(updatee)].id == userID) {
                                 var targs = args[1].substring(1, args[1].length).split('+');
                                 rollers[parseInt(updatee)].dice = parseInt(targs[0]);
-                                rollers[parseInt(updatee)].adder = parseInt(targs[1]);
+                                rollers[parseInt(updatee)].adder = parseInt(targs[1]) || 0;
                                 selecteds[userID].dice = parseInt(targs[0]);
-                                selecteds[userID].adder = parseInt(targs[1]);
+                                selecteds[userID].adder = parseInt(targs[1]) || 0;
                                 bot.sendMessage({
                                     to: channelID,
                                     message: 'Your dice has been updated! It is now: ' + args[1]
@@ -383,7 +383,7 @@ bot.on('message', function(user, userID, channelID, message, evt){
                                 if (rollers[i].id == userID) {
                                     var targs = args[1].substring(1, args[1].length).split('+');
                                     rollers[i].dice = parseInt(targs[0]);
-                                    rollers[i].adder = parseInt(targs[1]);
+                                    rollers[i].adder = parseInt(targs[1]) || 0;
                                     bot.sendMessage({
                                         to: channelID,
                                         message: 'Your dice has been updated! It is now: ' + args[1]
@@ -425,18 +425,44 @@ bot.on('message', function(user, userID, channelID, message, evt){
                 break;
             case 'roll':
                 logger.info(Date() + ' - ' + user + '(' + userID + ')' + ' did command: roll');
-                if (args[0]) {  
-                  var temp = args[0].split('d');
-                  var count = parseInt(temp[0]);
-                  var temp = temp[1].split('+');
-                  var dice = parseInt(temp[0]);
-                  var adder = parseInt(temp[1]);
+                if (args[0]) {
+                  if(args[0].substr(0,1) == 'd'){
+                    var temp = args[0].substr(1,args[0].length);
+                    var temp = temp.split('+');
+                    var dice = parseInt(temp[0]);
+                    var adder = parseInt(temp[1]) || 0;
+                    var output = '';
+                    var result = (Math.floor(Math.random() * dice) + 1);
+                    output += '[' + result + '] - ' + (result+adder);
+                    if(result == dice){
+                      output += ' - [CRIT]';
+                    }
+                    bot.sendMessage({
+                      to: channelID,
+                      message: 'Results: `1d' + dice + '+' + adder + ' - ' + output + '`'
+                    });
+                    break;
+                  } else
+                  { 
+                  var temp2 = args[0].split('d');
+                  var count = parseInt(temp2[0]);
+                  var temp2 = temp2[1].split('+');
+                  var dice = parseInt(temp2[0]);
+                  var adder = parseInt(temp2[1]) || 0;
                   var output = '';
                   for(var i = 0; i < count; i++){
 	                  if (i == 0){
-	                    output += (Math.floor(Math.random() * dice) + 1 + adder);
+                      var result = (Math.floor(Math.random() * dice) + 1);
+	                    output += '[' + result + '] - ' + (result + adder);
+                      if(result == dice){
+                        output += ' - [CRIT]';
+                      }
 	                  } else {
-		                  output += ' | ' + (Math.floor(Math.random() * dice) + 1 + adder);
+                      var result = (Math.floor(Math.random() * dice) + 1);
+		                  output += ' || ' + '[' + result + '] - ' + (result + adder);
+                      if(result == dice){
+                        output += ' - [CRIT]';
+                      }
 	                  }
                   }
 
@@ -445,13 +471,20 @@ bot.on('message', function(user, userID, channelID, message, evt){
 	                  message: 'Results: `' + count + 'd' + dice + '+'+ adder + ' - ' + output + '`'
                   });
                   break;
+                  }
                 }
                 else {
                     if (selecteds[userID]) {
                         if (selecteds[userID].id == userID) {
+                          var result = Math.floor(Math.random() * selecteds[userID].dice ) + 1;
+                          var output = "";
+                          output += selecteds[userID].name + '\'s Result: `d' + selecteds[userID].dice + ' + ' + selecteds[userID].adder + ' [' + result + ']` - ' + (result + selecteds[userID].adder);
+                              if(result == selecteds[userID].dice){
+                                output += ' - [CRIT]';
+                              };
                             bot.sendMessage({
                                 to: channelID,
-                                message: selecteds[userID].name +'\'s Result: `d' + selecteds[userID].dice + ' + ' + selecteds[userID].adder + '` ' + rollDice(parseInt(selecteds[userID].adder), parseInt(selecteds[userID].dice))
+                                message: output
                             });
                         }
                         break;
@@ -459,9 +492,15 @@ bot.on('message', function(user, userID, channelID, message, evt){
                     else {
                         for (var i = 0; i < rollers.length; i++) {
                             if (rollers[i].id == userID) {
+                              var result = Math.floor(Math.random() * rollers[i].dice ) + 1;
+                              var output = "";
+                              output += rollers[i].name + '\'s Result: `d' + rollers[i].dice + ' + ' + rollers[i].adder + ' [' + result + ']` - ' + (result + rollers[i].adder);
+                              if(result == rollers[i].dice){
+                                output += ' - [CRIT]';
+                              }
                                 bot.sendMessage({
                                     to: channelID,
-                                    message: rollers[i].name + '\'s Result: `d' + rollers[i].dice + ' + ' + rollers[i].adder + '` ' + rollDice(parseInt(rollers[i].adder), parseInt(rollers[i].dice))
+                                    message: output
                                 });
                             }
                         }
