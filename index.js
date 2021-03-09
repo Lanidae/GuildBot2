@@ -223,14 +223,22 @@ bot.on('message', function(user, userID, channelID, message, evt) {
         break;
       case 'select':
         for (var i = 0; i < rollers.length; i++) {
-          if (rollers[i].name.toLowerCase() == args[0].toLowerCase() && rollers[i].id == userID) {
+          var selectee = '';
+          if(args[0])
+          {
+            selectee = args[0].toLowerCase();
+          }
+          else{
+            selectee == 'godfuckingdamnitzana';
+          }
+          if (rollers[i].name.toLowerCase() == selectee && rollers[i].id == userID) {
             selecteds[userID] = rollers[i];
             bot.sendMessage({
               to: channelID,
               message: 'You selected - `' + args[0] + '` - I\'ll use them until you tell me to do someone else :).'
             });
             break;
-          } else if (rollers[i].name == args[0] && rollers[i].id != userID) {
+          } else if (rollers[i].name == selectee && rollers[i].id != userID) {
             bot.sendMessage({
               to: channelID,
               message: 'Sorry, you can only select your own characters!'
@@ -424,59 +432,104 @@ bot.on('message', function(user, userID, channelID, message, evt) {
       case 'roll':
         logger.info(Date() + ' - ' + user + '(' + userID + ')' + ' did command: roll');
         if (args[0]) {
-          if (args[0].substr(0,1) == '+'){
-            bot.sendMessage({
-              to: channelID,
-              message: 'Hey! That\'s not a valid roll format! You can choose from these options ```xdy+z|xdy|dy|dy+z``` or leave it blank for a rank roll'
-            });
-            break;
-          } else if (args[0].substr(0, 1) == 'd') {
-            var temp = args[0].substr(1, args[0].length);
-            var temp = temp.split('+');
-            var dice = parseInt(temp[0]) || 100;
-            var adder = parseInt(temp[1]) || 0;
-            var output = '';
-            var result = (Math.floor(Math.random() * dice) + 1);
-            output += '[' + result + '] - ' + (result + adder);
-            if (result == dice) {
-              output += ' - [CRIT]';
-            }
-            bot.sendMessage({
-              to: channelID,
-              message: 'Results: `1d' + dice + '+' + adder + ' - ' + output + '`'
-            });
-            logger.info(Date() + ' - ' + user + '(' + userID + ')' + ' rolled: ' + output + '');
-            break;
-          } else {
-            var temp2 = args[0].split('d');
-            var count = parseInt(temp2[0]);
-            var temp2 = temp2[1].split('+');
-            var dice = parseInt(temp2[0]);
-            var adder = parseInt(temp2[1]) || 0;
-            var output = '';
-            for (var i = 0; i < count; i++) {
-              if (i == 0) {
-                var result = (Math.floor(Math.random() * dice) + 1);
-                output += '[' + result + '] - ' + (result + adder);
-                if (result == dice) {
-                  output += ' - [CRIT]';
-                }
-              } else {
-                var result = (Math.floor(Math.random() * dice) + 1);
-                output += ' || ' + '[' + result + '] - ' + (result + adder);
-                if (result == dice) {
-                  output += ' - [CRIT]';
-                }
-              }
-            }
+          var tempdice = {};
+var count = 1;
+var dice = 20;
+var adder = 0;
+var result = 0;
+var output = "";
 
-            bot.sendMessage({
-              to: channelID,
-              message: 'Results: `' + count + 'd' + dice + '+' + adder + ' - ' + output + '`'
-            });
-            logger.info(Date() + ' - ' + user + '(' + userID + ')' + ' rolled: ' + output + '');
-            break;
-          }
+if(args[0].substr(0,1) == '+')
+{
+  bot.sendMessage({
+    to: channelID,
+    message: 'Hey! That\'s not a valid roll format! You can choose from these options ```xdy+z|xdy|dy|dy+z``` or leave it blank for a rank roll'
+    });
+    break;
+}
+var tempstring = args[0];
+if(tempstring.includes('d'))
+{
+
+  if( tempstring.substr(0,1) == 'd')
+  {
+    count = 1;
+    tempstring = tempstring.substr(1,tempstring.length);
+  }
+  else
+  {
+    tempdice = tempstring.split('d');
+    count = tempdice[0];
+  }
+  if(tempdice[0])
+  {
+
+  }
+  else
+  {
+    tempdice[1] = tempstring.split('+');
+  }
+  if(tempdice[1].includes('+'))
+  {
+    tempdice = tempdice[1].split('+');
+    dice = tempdice[0];
+    adder = tempdice[1];
+  }
+  else
+  {
+    dice = tempdice[1];
+  }
+}
+else if(tempstring.includes('+'))
+{
+  tempdice = tempstring.split('+');
+  dice = tempdice[0];
+  adder = tempdice[1];
+} 
+else 
+{
+  dice = tempstring;
+}
+count = parseInt(count);
+dice = parseInt(dice);
+adder = parseInt(adder);
+
+if(count > 1)
+{
+  var sum = 0;
+  for(var i = 0; i < count; i++)
+  {
+    result = (Math.floor(Math.random() * dice) + 1);
+      output += '[' + result + '] - ' + (result + adder);
+      sum += result;
+      if (result == dice)
+      {
+          output += ' - [CRIT]';
+      }
+      output += ' | ';
+  }
+    bot.sendMessage({
+    to: channelID,
+    message: '```Results: ' + output + ' |-| ' + sum + '```'
+    });
+    logger.info(Date() + ' - ' + user + '(' + userID + ')' + ' rolled: ' + output + '')
+    break;
+}
+else
+{
+  result = (Math.floor(Math.random() * dice) + 1);
+    output += '[' + result + '] - ' + (result + adder);
+    if (result == dice)
+    {
+        output += ' - [CRIT]';
+    }
+    bot.sendMessage({
+    to: channelID,
+    message: '```Results: 1d' + dice + '+' + adder + ' - ' + output + '```'
+    });
+    logger.info(Date() + ' - ' + user + '(' + userID + ')' + ' rolled: ' + output + '');
+    break;
+}
         }
         else {
           if (selecteds[userID]) {
@@ -544,6 +597,10 @@ bot.on('message', function(user, userID, channelID, message, evt) {
         if (selecteds[userID]) {
           if (selecteds[userID].id == userID) {
             selecteds[userID].health = parseInt(selecteds[userID].health) - damage;
+            bot.sendMessage({
+              to: channelID,
+              message: 'I did ' + damage + ' damage to ' + selecteds[userID].name + '.'
+            });
             switch (parseInt(selecteds[userID].health)) {
               case 0:
                 bot.sendMessage({
@@ -568,6 +625,10 @@ bot.on('message', function(user, userID, channelID, message, evt) {
           for (var i = 0; i < rollers.length; i++) {
             if (rollers[i].id == userID) {
               rollers[i].health = parseInt(rollers[i].health) - damage;
+              bot.sendMessage({
+              to: channelID,
+              message: 'I did ' + damage + ' damage to ' + rollers[i].name + '.'
+            });
               switch (parseInt(rollers[i].health)) {
                 case 0:
                   bot.sendMessage({
@@ -636,6 +697,10 @@ bot.on('message', function(user, userID, channelID, message, evt) {
       case 'shutdown':
         for (var i = 0; i < rollers.length; i++) {
           if (user == 'Lanidae') {
+            bot.sendMessage({
+              to:channelID,
+              message: 'shutting down, byebye!'
+            });
             process.exit();
           }
 
